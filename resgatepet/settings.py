@@ -12,23 +12,21 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-from pathlib import Path
 import dj_database_url
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tn72l7h+!f4rx1^6)1a2w_!1%7gi&#h6vt(=+1r)z4b1k@9501'
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "resgate-pet.vercel.app", ".vercel.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "resgate-pet.vercel.app", "*.vercel.app"]
 
 
 # Application definition
@@ -79,10 +77,14 @@ WSGI_APPLICATION = 'resgatepet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.environ.get("DATABASE_URL"):
+if os.environ.get("VERCEL") or os.environ.get("DATABASE_URL"):
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL não definida em produção")
+
     DATABASES = {
         "default": dj_database_url.parse(
-            os.environ.get("DATABASE_URL"),
+            DATABASE_URL,
             conn_max_age=600,
             ssl_require=True
         )
