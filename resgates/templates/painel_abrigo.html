@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do abrigo | ResgatePet{% endblock %}
+
+{% block content %}
+<section class="hero hero-compact">
+  <div>
+    <span class="eyebrow">Área do abrigo</span>
+    <h1>Gerencie animais, triagem e contatos recebidos.</h1>
+    <p>O painel centraliza as telas sugeridas no PDF em um fluxo único de operação.</p>
+  </div>
+  <div class="hero-actions">
+    <a href="{% url 'cadastrar-animal' %}" class="btn btn-primary">Cadastrar novo animal</a>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card">
+    <strong>{{ stats.animais }}</strong>
+    <span>animais cadastrados</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ stats.disponiveis }}</strong>
+    <span>disponíveis</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ stats.em_analise }}</strong>
+    <span>em análise</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ stats.adotados }}</strong>
+    <span>adotados</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ stats.solicitacoes }}</strong>
+    <span>solicitações recebidas</span>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Animais do abrigo</h2>
+        <p>Cadastros ativos com atalho de edição.</p>
+      </div>
+    </div>
+    {% if animais %}
+      <div class="list-cards">
+        {% for animal in animais %}
+          <article class="list-card wide">
+            <div>
+              <h3>{{ animal.nome }}</h3>
+              <p>{{ animal.tipo }} • {{ animal.localizacao }} • {{ animal.get_status_display }}</p>
+            </div>
+            <div class="inline-actions">
+              <a href="{% url 'detalhe-animal' animal.pk %}" class="btn btn-secondary">Visualizar</a>
+              <a href="{% url 'editar-animal' animal.pk %}" class="btn btn-primary">Editar</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <p>Nenhum animal cadastrado ainda.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Solicitações recebidas</h2>
+        <p>Atualize o status sem sair do painel.</p>
+      </div>
+    </div>
+    {% if solicitacoes %}
+      <div class="list-cards">
+        {% for solicitacao in solicitacoes %}
+          <article class="list-card column">
+            <div class="request-head">
+              <div>
+                <h3>{{ solicitacao.nome_contato }}</h3>
+                <p>{{ solicitacao.animal.nome }} • {{ solicitacao.criado_em|date:"d/m/Y H:i" }}</p>
+              </div>
+              <span class="tag tag-{{ solicitacao.status }}">{{ solicitacao.get_status_display }}</span>
+            </div>
+            <p>{{ solicitacao.mensagem|default:"Sem mensagem enviada." }}</p>
+            <div class="request-meta">
+              <span>{{ solicitacao.email_contato }}</span>
+              <span>{{ solicitacao.telefone_contato }}</span>
+            </div>
+            <form method="post" action="{% url 'atualizar-solicitacao' solicitacao.pk %}" class="inline-form">
+              {% csrf_token %}
+              <select name="status">
+                {% for value, label in solicitacao.STATUS_CHOICES %}
+                  <option value="{{ value }}" {% if solicitacao.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-primary">Atualizar</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <p>Solicitações aparecerão aqui quando adotantes entrarem em contato.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

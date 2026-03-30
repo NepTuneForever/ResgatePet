@@ -1,165 +1,84 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-<title>Cadastro</title>
+{% block title %}Criar conta | ResgatePet{% endblock %}
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-copy">
+    <span class="eyebrow">Cadastro</span>
+    <h1>Crie uma conta de adotante ou de abrigo.</h1>
+    <p>O formulário unifica os fluxos do rascunho do PDF e organiza os dados que o backend precisa para painel, filtros e contato.</p>
+  </div>
 
-<style>
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+  <div class="panel auth-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Novo cadastro</h2>
+        <p>Preencha os dados mínimos para começar.</p>
+      </div>
+    </div>
 
-body {
-  margin: 0;
-  font-family: 'DM Sans', sans-serif;
-  background: #f2f2f2;
-  min-height: 100vh;
-}
-
-/* HEADER */
-.header {
-  background: #2f5d8c;
-  color: white;
-  padding: 20px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  text-align: center;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 22px;
-}
-
-/* WRAPPER centraliza o card */
-.wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-}
-
-/* CARD */
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 420px;
-}
-
-/* INPUTS */
-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-family: inherit;
-  font-size: 15px;
-}
-
-/* BOTÃO */
-button {
-  width: 100%;
-  padding: 12px;
-  background: #f4c542;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 15px;
-}
-
-/* EMPRESA TOGGLE */
-.toggle {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.toggle input {
-  display: none;
-}
-
-.toggle label {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  font-size: 14px;
-  margin-bottom: 0;
-}
-
-/* selecionado */
-.toggle input:checked + label {
-  background: #2f5d8c;
-  color: white;
-  border-color: #2f5d8c;
-}
-
-/* LINK */
-.link {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.link a {
-  color: #2f5d8c;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-/* ERRO */
-.erro {
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <h1>Criar Conta</h1>
-</div>
-
-<div class="wrapper">
-  <div class="card">
-    <form method="POST">
+    <form method="post" class="form-grid register-form">
       {% csrf_token %}
 
-      {% if erro %}
-        <div class="erro">{{ erro }}</div>
-      {% endif %}
-
-      <input type="text" name="username" placeholder="Usuário">
-      <input type="password" name="password" placeholder="Senha">
-
-      <!-- EMPRESA -->
-      <label>Tipo de conta</label>
-      <div class="toggle">
-        <input type="radio" name="empresa" value="false" id="pessoa" checked>
-        <label for="pessoa">👤 Pessoa</label>
-
-        <input type="radio" name="empresa" value="true" id="empresa">
-        <label for="empresa">🏢 Empresa</label>
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Usuário</label>
+        {{ form.username }}
+        {% if form.username.errors %}<small class="form-error">{{ form.username.errors|join:", " }}</small>{% endif %}
       </div>
-
-      <button type="submit">Cadastrar</button>
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">E-mail</label>
+        {{ form.email }}
+        {% if form.email.errors %}<small class="form-error">{{ form.email.errors|join:", " }}</small>{% endif %}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Senha</label>
+        {{ form.password1 }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirmar senha</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<small class="form-error">{{ form.password2.errors|join:", " }}</small>{% endif %}
+      </div>
+      <div class="form-group form-group-full">
+        <label class="checkbox-pill checkbox-wide">{{ form.empresa }} Esta conta pertence a um abrigo/ONG</label>
+      </div>
+      <div class="form-group">
+        <label for="{{ form.nome_completo.id_for_label }}">Nome completo ou nome do abrigo</label>
+        {{ form.nome_completo }}
+        {% if form.nome_completo.errors %}<small class="form-error">{{ form.nome_completo.errors|join:", " }}</small>{% endif %}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+        {{ form.telefone }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.endereco.id_for_label }}">Endereço</label>
+        {{ form.endereco }}
+        {% if form.endereco.errors %}<small class="form-error">{{ form.endereco.errors|join:", " }}</small>{% endif %}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.cep.id_for_label }}">CEP</label>
+        {{ form.cep }}
+      </div>
+      <div class="form-group form-group-full">
+        <label for="{{ form.responsavel.id_for_label }}">Responsável pelo abrigo</label>
+        {{ form.responsavel }}
+        {% if form.responsavel.errors %}<small class="form-error">{{ form.responsavel.errors|join:", " }}</small>{% endif %}
+      </div>
+      {% if form.non_field_errors %}
+        <div class="form-group-full">
+          <small class="form-error">{{ form.non_field_errors|join:", " }}</small>
+        </div>
+      {% endif %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Criar conta</button>
+      </div>
     </form>
 
-    <div class="link">
-      <a href="/login/">Já tenho conta</a>
+    <div class="auth-links">
+      <a href="{% url 'login' %}">Já tenho conta</a>
     </div>
   </div>
-</div>
-
-</body>
-</html>
+</section>
+{% endblock %}

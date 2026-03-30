@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ResgatePet{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'resgates/styles.css' %}">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="shell-inner topbar">
+        <a href="{% url 'animais' %}" class="brand">
+          <span class="brand-mark">🐾</span>
+          <span>
+            <strong>ResgatePet</strong>
+            <small>Adoção e acolhimento</small>
+          </span>
+        </a>
+
+        <nav class="main-nav">
+          <a href="{% url 'animais' %}">Animais</a>
+          {% if request.user.is_authenticated %}
+            <a href="{% url 'painel' %}">Meu painel</a>
+            {% if active_profile and active_profile.empresa %}
+              <a href="{% url 'cadastrar-animal' %}">Cadastrar animal</a>
+            {% endif %}
+          {% else %}
+            <a href="{% url 'login' %}">Entrar</a>
+            <a href="{% url 'register' %}">Criar conta</a>
+          {% endif %}
+        </nav>
+
+        <div class="header-actions">
+          {% if request.user.is_authenticated %}
+            <div class="user-chip">
+              <span class="avatar">{{ request.user.username|first|upper }}</span>
+              <div>
+                <strong>{% if active_profile %}{{ active_profile.nome_exibicao }}{% else %}{{ request.user.username }}{% endif %}</strong>
+                <small>{% if active_profile and active_profile.empresa %}Abrigo{% else %}Adotante{% endif %}</small>
+              </div>
+            </div>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Sair</button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}" class="btn btn-secondary">Entrar</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main class="shell-inner page-content">
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

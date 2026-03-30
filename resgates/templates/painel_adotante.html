@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do adotante | ResgatePet{% endblock %}
+
+{% block content %}
+<section class="hero hero-compact">
+  <div>
+    <span class="eyebrow">Área do adotante</span>
+    <h1>Acompanhe favoritos e solicitações de adoção.</h1>
+    <p>Seu painel concentra o histórico de contato com os abrigos e atalhos para continuar a busca.</p>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card">
+    <strong>{{ favoritos|length }}</strong>
+    <span>favoritos</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ solicitacoes|length }}</strong>
+    <span>solicitações enviadas</span>
+  </article>
+  <article class="stat-card">
+    <strong>{{ recomendados|length }}</strong>
+    <span>sugestões para você</span>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Minhas solicitações</h2>
+        <p>Status dos contatos enviados aos abrigos.</p>
+      </div>
+    </div>
+    {% if solicitacoes %}
+      <div class="list-cards">
+        {% for solicitacao in solicitacoes %}
+          <article class="list-card">
+            <div>
+              <h3>{{ solicitacao.animal.nome }}</h3>
+              <p>{{ solicitacao.criado_em|date:"d/m/Y H:i" }}</p>
+            </div>
+            <span class="tag tag-{{ solicitacao.status }}">{{ solicitacao.get_status_display }}</span>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <p>Você ainda não enviou solicitações de adoção.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Favoritos</h2>
+        <p>Animais que você marcou para acompanhar.</p>
+      </div>
+    </div>
+    {% if favoritos %}
+      <div class="list-cards">
+        {% for favorito in favoritos %}
+          <article class="list-card">
+            <div>
+              <h3>{{ favorito.animal.nome }}</h3>
+              <p>{{ favorito.animal.tipo }} • {{ favorito.animal.localizacao }}</p>
+            </div>
+            <a href="{% url 'detalhe-animal' favorito.animal.pk %}" class="btn btn-secondary">Abrir</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <p>Seus favoritos aparecerão aqui.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2>Você também pode gostar</h2>
+      <p>Animais disponíveis que ainda não estão na sua lista.</p>
+    </div>
+  </div>
+  {% if recomendados %}
+    <div class="animal-grid">
+      {% for animal in recomendados %}
+        <article class="animal-card compact">
+          <div class="animal-card-image">
+            <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+          </div>
+          <div class="animal-card-body">
+            <h3>{{ animal.nome }}</h3>
+            <p>{{ animal.tipo }} • {{ animal.localizacao }}</p>
+            <a href="{% url 'detalhe-animal' animal.pk %}" class="btn btn-primary">Ver perfil</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state compact">
+      <p>Sem recomendações adicionais no momento.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

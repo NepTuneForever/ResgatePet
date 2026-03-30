@@ -1,11 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Recuperar acesso | ResgatePet{% endblock %}
+
+{% block content %}
+<section class="panel panel-centered">
+  <div class="panel-header">
+    <div>
+      <h1>Recuperação de acesso</h1>
+      <p>O projeto ainda não possui fluxo automatizado de redefinição por e-mail.</p>
+    </div>
+  </div>
+
+  <div class="status-banner">
+    <strong>Implementação segura pendente.</strong>
+    <span>Enquanto isso, faça login com uma conta existente ou crie uma nova para testar o sistema.</span>
+  </div>
+
+  <div class="form-actions">
+    <a href="{% url 'login' %}" class="btn btn-primary">Voltar para login</a>
+    <a href="{% url 'register' %}" class="btn btn-secondary">Criar nova conta</a>
+  </div>
+</section>
+{% endblock %}

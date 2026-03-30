@@ -1,203 +1,97 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-<title>Cadastrar Pet</title>
+{% block title %}{% if object %}Editar animal{% else %}Cadastrar animal{% endif %} | ResgatePet{% endblock %}
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-<style>
-body {
-  margin: 0;
-  font-family: 'DM Sans', sans-serif;
-  background: #f2f2f2;
-}
-
-/* HEADER */
-.header {
-  background: #2f5d8c;
-  color: white;
-  padding: 16px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* USER MENU */
-.user-menu {
-  position: relative;
-}
-
-.user-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid white;
-}
-
-.user-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 45px;
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  min-width: 140px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  display: none;
-}
-
-.dropdown.active {
-  display: block;
-}
-
-.dropdown p {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #333;
-}
-
-.dropdown button {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background: #f44336;
-  color: white;
-  border-radius: 8px;
-}
-
-/* FORM */
-.card {
-  background: white;
-  margin: 15px;
-  padding: 20px;
-  border-radius: 16px;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
-
-.tipo-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.tipo-buttons input {
-  display: none;
-}
-
-.btn-tipo {
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: #e0e0e0;
-  cursor: pointer;
-}
-
-.tipo-buttons input:checked + .btn-tipo {
-  background: #2f5d8c;
-  color: white;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: #f4c542;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="header-content">
-    <h1>🐾 Cadastrar Pet</h1>
-
-    <div class="user-menu">
-      <div class="user-btn" onclick="toggleMenu()">
-        <img src="https://i.imgur.com/6VBx3io.png">
-      </div>
-
-      <div class="dropdown" id="dropdown">
-        <p>
-          {% if request.user.is_authenticated %}
-            {{ request.user.username }}
-          {% else %}
-            Visitante
-          {% endif %}
-        </p>
-
-        <form method="POST" action="/logout/">
-          {% csrf_token %}
-          <button type="submit">🚪 Logout</button>
-        </form>
-      </div>
-    </div>
+{% block content %}
+<section class="hero hero-compact">
+  <div>
+    <span class="eyebrow">Área do abrigo</span>
+    <h1>{% if object %}Atualize o cadastro de {{ object.nome }}{% else %}Cadastre um novo animal resgatado{% endif %}</h1>
+    <p>Preencha o perfil completo para facilitar triagem, filtros e contato com possíveis adotantes.</p>
   </div>
-</div>
+</section>
 
-<div class="card">
-  <form method="POST">
+<section class="panel">
+  <form method="post" class="form-grid">
     {% csrf_token %}
 
-    <div class="tipo-buttons">
-      <input type="radio" name="tipo" value="Cachorro" id="t1" required>
-      <label for="t1" class="btn-tipo">🐕 Cachorro</label>
-
-      <input type="radio" name="tipo" value="Gato" id="t2">
-      <label for="t2" class="btn-tipo">🐈 Gato</label>
-
-      <input type="radio" name="tipo" value="Outro" id="t3">
-      <label for="t3" class="btn-tipo">🐾 Outro</label>
+    <div class="form-group">
+      <label for="{{ form.nome.id_for_label }}">Nome</label>
+      {{ form.nome }}
+      {% if form.nome.errors %}<small class="form-error">{{ form.nome.errors|join:", " }}</small>{% endif %}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.tipo.id_for_label }}">Tipo</label>
+      {{ form.tipo }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.idade.id_for_label }}">Idade</label>
+      {{ form.idade }}
+      {% if form.idade.errors %}<small class="form-error">{{ form.idade.errors|join:", " }}</small>{% endif %}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.sexo.id_for_label }}">Sexo</label>
+      {{ form.sexo }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.porte.id_for_label }}">Porte</label>
+      {{ form.porte }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.pelagem.id_for_label }}">Pelagem</label>
+      {{ form.pelagem }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.data_resgate.id_for_label }}">Data de resgate</label>
+      {{ form.data_resgate }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.localizacao.id_for_label }}">Localização</label>
+      {{ form.localizacao }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.contato.id_for_label }}">Contato do abrigo</label>
+      {{ form.contato }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.foto.id_for_label }}">URL da foto</label>
+      {{ form.foto }}
+      {% if form.foto.errors %}<small class="form-error">{{ form.foto.errors|join:", " }}</small>{% endif %}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.status.id_for_label }}">Status</label>
+      {{ form.status }}
+    </div>
+    <div class="form-group form-group-full">
+      <label for="{{ form.caracteristicas.id_for_label }}">Características e comportamento</label>
+      {{ form.caracteristicas }}
+      {% if form.caracteristicas.errors %}<small class="form-error">{{ form.caracteristicas.errors|join:", " }}</small>{% endif %}
+    </div>
+    <div class="form-group form-group-full">
+      <label for="{{ form.status_saude.id_for_label }}">Observações de saúde</label>
+      {{ form.status_saude }}
     </div>
 
-    <input type="text" name="nome" placeholder="Nome" required>
-    <input type="number" name="idade" placeholder="Idade" required>
-    <textarea name="caracteristicas" placeholder="Características" required></textarea>
-    <input type="text" name="localizacao" placeholder="Localização" required>
-    <input type="text" name="contato" placeholder="Contato" required>
-    <input type="url" name="foto" placeholder="URL da Foto" required>
+    <div class="health-flags form-group-full">
+      <label class="checkbox-pill">{{ form.v8_v10 }} Vacina V8/V10</label>
+      <label class="checkbox-pill">{{ form.antirrabica }} Antirrábica</label>
+      <label class="checkbox-pill">{{ form.giardia }} Giárdia</label>
+      <label class="checkbox-pill">{{ form.leucemia }} Leucemia</label>
+      <label class="checkbox-pill">{{ form.castrado }} Castrado</label>
+      <label class="checkbox-pill">{{ form.vermifugado }} Vermifugado</label>
+      <label class="checkbox-pill">{{ form.destaque }} Destacar no catálogo</label>
+    </div>
 
-    <button type="submit">Cadastrar</button>
+    {% if form.non_field_errors %}
+      <div class="form-group-full">
+        <small class="form-error">{{ form.non_field_errors|join:", " }}</small>
+      </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <a href="{% url 'painel-abrigo' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">{% if object %}Salvar alterações{% else %}Cadastrar animal{% endif %}</button>
+    </div>
   </form>
-</div>
-
-<script>
-function toggleMenu() {
-  document.getElementById("dropdown").classList.toggle("active");
-}
-
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("dropdown");
-  const btn = document.querySelector(".user-btn");
-
-  if (!btn.contains(e.target) && !menu.contains(e.target)) {
-    menu.classList.remove("active");
-  }
-});
-</script>
-
-</body>
-</html>
+</section>
+{% endblock %}

@@ -1,13 +1,43 @@
-from django.contrib.auth import views as auth_views
 from django.urls import path
-from .views import CreatePetView, ViewAnimais, LoginView, RegisterView, LogoutView, DetalheAnimalView
-from rest_framework.authtoken.views import obtain_auth_token
+
+from .views import (
+    AbrigoDashboardView,
+    AdotanteDashboardView,
+    AnimalDetailAPIView,
+    AnimalListAPIView,
+    AtualizarSolicitacaoView,
+    CreatePetView,
+    DashboardRedirectView,
+    DetalheAnimalView,
+    FavoriteToggleView,
+    HomeRedirectView,
+    LoginView,
+    LogoutView,
+    PasswordRecoveryView,
+    RegisterView,
+    SolicitarAdocaoView,
+    SolicitationListAPIView,
+    UpdatePetView,
+    ViewAnimais,
+)
 
 urlpatterns = [
-    path('animais/', ViewAnimais.as_view(), name='animais'),
-    path('cadastrar/', CreatePetView.as_view(), name='cadastrar-animal'),
+    path("", HomeRedirectView.as_view(), name="home"),
+    path("animais/", ViewAnimais.as_view(), name="animais"),
+    path("animais/novo/", CreatePetView.as_view(), name="cadastrar-animal"),
+    path("animais/<int:pk>/editar/", UpdatePetView.as_view(), name="editar-animal"),
+    path("animal/<int:pk>/", DetalheAnimalView.as_view(), name="detalhe-animal"),
+    path("animal/<int:pk>/favoritar/", FavoriteToggleView.as_view(), name="favoritar-animal"),
+    path("animal/<int:pk>/interesse/", SolicitarAdocaoView.as_view(), name="solicitar-adocao"),
+    path("solicitacoes/<int:pk>/status/", AtualizarSolicitacaoView.as_view(), name="atualizar-solicitacao"),
+    path("painel/", DashboardRedirectView.as_view(), name="painel"),
+    path("painel/adotante/", AdotanteDashboardView.as_view(), name="painel-adotante"),
+    path("painel/abrigo/", AbrigoDashboardView.as_view(), name="painel-abrigo"),
     path("login/", LoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
     path("logout/", LogoutView.as_view(), name="logout"),
-    path('animal/<int:pk>/', DetalheAnimalView.as_view(), name='detalhe-animal'),
+    path("recuperar/", PasswordRecoveryView.as_view(), name="recuperar"),
+    path("api/animais/", AnimalListAPIView.as_view(), name="api-animais"),
+    path("api/animais/<int:pk>/", AnimalDetailAPIView.as_view(), name="api-animal-detalhe"),
+    path("api/solicitacoes/", SolicitationListAPIView.as_view(), name="api-solicitacoes"),
 ]

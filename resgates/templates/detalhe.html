@@ -1,85 +1,139 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ animal.nome }}</title>
+{% extends "base.html" %}
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+{% block title %}{{ animal.nome }} | ResgatePet{% endblock %}
 
-<style>
-body {
-  margin: 0;
-  font-family: 'DM Sans', sans-serif;
-  background: #f2f2f2;
-}
+{% block content %}
+<section class="detail-layout">
+  <article class="detail-card detail-card-image">
+    <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+  </article>
 
-.header {
-  background: #2f5d8c;
-  color: white;
-  padding: 16px;
-}
+  <article class="detail-card">
+    <div class="detail-header">
+      <div>
+        <span class="tag tag-{{ animal.status }}">{{ animal.get_status_display }}</span>
+        <h1>{{ animal.nome }}</h1>
+        <p>{{ animal.tipo }} • {{ animal.idade }} ano{{ animal.idade|pluralize }} • {{ animal.localizacao }}</p>
+      </div>
+      {% if request.user.is_authenticated and active_profile and not active_profile.empresa %}
+        <form method="post" action="{% url 'favoritar-animal' animal.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="favorite-btn large {% if is_favorito %}is-active{% endif %}">
+            {% if is_favorito %}★ Favorito{% else %}☆ Favoritar{% endif %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
 
-.container {
-  padding: 15px;
-}
+    <div class="detail-grid">
+      <div class="detail-data">
+        <strong>Porte</strong>
+        <span>{{ animal.porte }}</span>
+      </div>
+      <div class="detail-data">
+        <strong>Sexo</strong>
+        <span>{{ animal.sexo }}</span>
+      </div>
+      <div class="detail-data">
+        <strong>Pelagem</strong>
+        <span>{{ animal.pelagem|default:"Não informada" }}</span>
+      </div>
+      <div class="detail-data">
+        <strong>Resgate</strong>
+        <span>{{ animal.data_resgate|date:"d/m/Y"|default:"Não informado" }}</span>
+      </div>
+      <div class="detail-data">
+        <strong>Abrigo</strong>
+        <span>{{ animal.nome_abrigo }}</span>
+      </div>
+      <div class="detail-data">
+        <strong>Contato</strong>
+        <span>{{ animal.contato }}</span>
+      </div>
+    </div>
 
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-}
+    <div class="info-block">
+      <h2>Perfil do animal</h2>
+      <p>{{ animal.caracteristicas }}</p>
+    </div>
 
-img {
-  width: 100px;
-  border-radius: 12px;
-  margin-bottom: 15px;
-}
+    <div class="info-block">
+      <h2>Saúde e cuidados</h2>
+      <ul class="check-list">
+        <li class="{% if animal.v8_v10 %}is-checked{% endif %}">Vacina V8/V10</li>
+        <li class="{% if animal.antirrabica %}is-checked{% endif %}">Antirrábica</li>
+        <li class="{% if animal.giardia %}is-checked{% endif %}">Tratamento para giárdia</li>
+        <li class="{% if animal.leucemia %}is-checked{% endif %}">Acompanhamento para leucemia</li>
+        <li class="{% if animal.castrado %}is-checked{% endif %}">Castrado</li>
+        <li class="{% if animal.vermifugado %}is-checked{% endif %}">Vermifugado</li>
+      </ul>
+      <p>{{ animal.status_saude|default:"Abrigo não adicionou observações extras." }}</p>
+    </div>
 
-.nome {
-  font-size: 22px;
-  font-weight: bold;
-}
+    <div class="detail-actions">
+      <a href="{% url 'animais' %}" class="btn btn-secondary">Voltar ao catálogo</a>
+      {% if request.user.is_authenticated and active_profile and active_profile.empresa and animal.abrigo_id == request.user.id %}
+        <a href="{% url 'editar-animal' animal.pk %}" class="btn btn-primary">Editar cadastro</a>
+      {% endif %}
+    </div>
+  </article>
+</section>
 
-.info {
-  color: #666;
-}
+{% if request.user.is_authenticated and active_profile and not active_profile.empresa %}
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Interesse na adoção</h2>
+        <p>O abrigo receberá seus dados e poderá continuar o atendimento.</p>
+      </div>
+    </div>
 
-.btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px;
-  background: #2f5d8c;
-  color: white;
-  border-radius: 10px;
-  text-decoration: none;
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <h1>🐾 Detalhes</h1>
-</div>
-
-<div class="container">
-  <div class="card">
-
-    {% if animal.foto %}
-      <img src="{{ animal.foto }}">
+    {% if interesse_existente %}
+      <div class="status-banner">
+        <strong>Solicitação já enviada.</strong>
+        <span>Status atual: {{ interesse_existente.get_status_display }}</span>
+      </div>
+    {% elif can_show_interest_form %}
+      <form method="post" action="{% url 'solicitar-adocao' animal.pk %}" class="form-grid">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="{{ interest_form.nome_contato.id_for_label }}">Nome para contato</label>
+          {{ interest_form.nome_contato }}
+          {% if interest_form.nome_contato.errors %}<small class="form-error">{{ interest_form.nome_contato.errors|join:", " }}</small>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="{{ interest_form.email_contato.id_for_label }}">E-mail</label>
+          {{ interest_form.email_contato }}
+          {% if interest_form.email_contato.errors %}<small class="form-error">{{ interest_form.email_contato.errors|join:", " }}</small>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="{{ interest_form.telefone_contato.id_for_label }}">Telefone</label>
+          {{ interest_form.telefone_contato }}
+          {% if interest_form.telefone_contato.errors %}<small class="form-error">{{ interest_form.telefone_contato.errors|join:", " }}</small>{% endif %}
+        </div>
+        <div class="form-group form-group-full">
+          <label for="{{ interest_form.mensagem.id_for_label }}">Mensagem</label>
+          {{ interest_form.mensagem }}
+          {% if interest_form.mensagem.errors %}<small class="form-error">{{ interest_form.mensagem.errors|join:", " }}</small>{% endif %}
+          {% if interest_form.non_field_errors %}<small class="form-error">{{ interest_form.non_field_errors|join:", " }}</small>{% endif %}
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Enviar interesse</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="status-banner">
+        <strong>Solicitações indisponíveis.</strong>
+        <span>Este animal não está aceitando novos contatos neste momento.</span>
+      </div>
     {% endif %}
-
-    <div class="nome">{{ animal.nome }}</div>
-    <div class="info">{{ animal.tipo }} • {{ animal.idade }} anos</div>
-    <div class="info">📍 {{ animal.localizacao }}</div>
-    <div class="info">📞 {{ animal.contato }}</div>
-
-    <p>{{ animal.caracteristicas }}</p>
-
-    <a href="/animais/" class="btn">Voltar</a>
-
-  </div>
-</div>
-
-</body>
-</html>
+  </section>
+{% elif not request.user.is_authenticated %}
+  <section class="panel panel-compact">
+    <div class="status-banner">
+      <strong>Entre na sua conta para demonstrar interesse.</strong>
+      <span>Você pode navegar pelo catálogo agora e iniciar o contato após o login.</span>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

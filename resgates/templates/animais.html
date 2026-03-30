@@ -1,325 +1,148 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Adote um Pet</title>
+{% extends "base.html" %}
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+{% block title %}Animais para adoção | ResgatePet{% endblock %}
 
-<style>
-body {
-  margin: 0;
-  font-family: 'DM Sans', sans-serif;
-  background: #f2f2f2;
-}
+{% block content %}
+<section class="hero">
+  <div>
+    <span class="eyebrow">Área do adotante</span>
+    <h1>Encontre um animal compatível com sua rotina.</h1>
+    <p>
+      Pesquise por espécie, porte, localização e status. O catálogo integra a triagem do abrigo
+      com a jornada do adotante.
+    </p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card">
+      <strong>{{ total_animais }}</strong>
+      <span>animais no catálogo</span>
+    </div>
+    <div class="stat-card">
+      <strong>{{ destaques|length }}</strong>
+      <span>destaques selecionados</span>
+    </div>
+    <div class="stat-card">
+      <strong>{% if request.user.is_authenticated %}{{ favoritos_ids|length }}{% else %}0{% endif %}</strong>
+      <span>favoritos salvos</span>
+    </div>
+  </div>
+</section>
 
-/* HEADER */
-.header {
-  background: #2f5d8c;
-  color: white;
-  padding: 16px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  position: relative;
-}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2>Filtros e busca</h2>
+      <p>Use os campos abaixo para refinar o catálogo.</p>
+    </div>
+  </div>
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  <form method="get" class="filter-grid">
+    <div class="form-group form-group-wide">
+      <label for="{{ filter_form.q.id_for_label }}">Buscar por nome, pelagem ou descrição</label>
+      {{ filter_form.q }}
+    </div>
+    <div class="form-group">
+      <label for="{{ filter_form.tipo.id_for_label }}">Tipo</label>
+      {{ filter_form.tipo }}
+    </div>
+    <div class="form-group">
+      <label for="{{ filter_form.porte.id_for_label }}">Porte</label>
+      {{ filter_form.porte }}
+    </div>
+    <div class="form-group">
+      <label for="{{ filter_form.sexo.id_for_label }}">Sexo</label>
+      {{ filter_form.sexo }}
+    </div>
+    <div class="form-group">
+      <label for="{{ filter_form.status.id_for_label }}">Status</label>
+      {{ filter_form.status }}
+    </div>
+    <div class="form-group">
+      <label for="{{ filter_form.localizacao.id_for_label }}">Localização</label>
+      {{ filter_form.localizacao }}
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+      <a href="{% url 'animais' %}" class="btn btn-secondary">Limpar</a>
+    </div>
+  </form>
+</section>
 
-/* USER */
-.user-area {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.username {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.user-menu { position: relative; }
-
-.user-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid white;
-}
-
-.user-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 45px;
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  min-width: 140px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  display: none;
-  z-index: 99;
-}
-
-.dropdown.active { display: block; }
-
-.dropdown button {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background: #f44336;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* TITLE */
-.title {
-  font-size: 40px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
-}
-
-/* TABS */
-.tabs {
-  display: flex;
-  gap: 10px;
-  padding: 15px;
-  overflow-x: auto;
-  justify-content: center;
-}
-
-.tab {
-  background: #e0e0e0;
-  padding: 8px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.tab.active { background: #f4c542; }
-
-/* GRID RESPONSIVO */
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  justify-content: center;
-  gap: 15px;
-  padding: 15px 15px 90px;
-}
-
-/* CARD */
-.card {
-  width: 100%;
-  max-width: 240px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.card img, .foto-placeholder {
-  width: 100%;
-  height: 130px;
-  border-radius: 12px;
-  object-fit: cover;
-  margin-bottom: 10px;
-}
-
-.foto-placeholder {
-  background: #f0ede6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-}
-
-.nome {
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.info {
-  font-size: 14px;
-  color: #555;
-}
-
-.local {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: auto;
-}
-
-.btn-ver {
-  margin-top: 10px;
-  padding: 8px;
-  background: #2f5d8c;
-  color: white;
-  border-radius: 20px;
-  text-decoration: none;
-}
-
-/* FAB */
-.fab {
-  position: fixed;
-  bottom: 24px;
-  right: 20px;
-  background: #f4c542;
-  padding: 14px 22px;
-  border-radius: 50px;
-  text-decoration: none;
-  color: black;
-  font-weight: bold;
-}
-
-/* RESPONSIVO */
-@media (max-width: 768px) {
-  .title { font-size: 24px; }
-  .username { display: none; }
-  .header { padding: 12px; }
-}
-
-@media (max-width: 480px) {
-  .container {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-  }
-
-  .title { font-size: 20px; }
-
-  .tabs { justify-content: flex-start; }
-
-  .card img, .foto-placeholder {
-    height: 110px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 220px));
-  }
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="header-content">
-
-    <div></div>
-
-    <div class="title">🐾 Adote um Pet</div>
-
-    <div class="user-area">
-      <span class="username">
-        {% if request.user.is_authenticated %}
-          {{ request.user.username }}
-        {% else %}
-          Visitante
-        {% endif %}
-      </span>
-
-      <div class="user-menu">
-        <div class="user-btn" onclick="toggleMenu()">
-          <img src="https://i.imgur.com/6VBx3io.png">
-        </div>
-
-        <div class="dropdown" id="dropdown">
-          <form method="POST" action="/logout/">
-            {% csrf_token %}
-            <button type="submit">Sair</button>
-          </form>
-        </div>
+{% if destaques %}
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Destaques do abrigo</h2>
+        <p>Animais priorizados pela equipe para aumentar a chance de adoção.</p>
       </div>
     </div>
-
-  </div>
-</div>
-
-<div class="tabs">
-  <div class="tab active" data-tipo="all">Início</div>
-  {% regroup animais by tipo as tipos %}
-  {% for grupo in tipos %}
-    <div class="tab" data-tipo="{{ grupo.grouper|lower }}">{{ grupo.grouper }}</div>
-  {% endfor %}
-</div>
-
-<div class="container">
-  {% for animal in animais %}
-  <div class="card" data-tipo="{{ animal.tipo|lower }}">
-
-    {% if animal.foto %}
-      <img src="{{ animal.foto }}">
-    {% else %}
-      <div class="foto-placeholder">🐾</div>
-    {% endif %}
-
-    <div class="nome">{{ animal.nome }}</div>
-    <div class="info">{{ animal.tipo }} • {{ animal.idade }}</div>
-    <div class="local">📍 {{ animal.localizacao }}</div>
-
-    <a href="{% url 'detalhe-animal' animal.pk %}" class="btn-ver">Ver mais</a>
-
-  </div>
-  {% endfor %}
-</div>
-
-{% if request.user.is_authenticated and request.user.profile.empresa %}
-  <a href="{% url 'cadastrar-animal' %}" class="fab">+ Cadastrar</a>
+    <div class="highlight-grid">
+      {% for animal in destaques %}
+        <article class="highlight-card">
+          <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+          <div>
+            <span class="tag tag-{{ animal.status }}">{{ animal.get_status_display }}</span>
+            <h3>{{ animal.nome }}</h3>
+            <p>{{ animal.tipo }} • {{ animal.idade }} ano{{ animal.idade|pluralize }} • {{ animal.localizacao }}</p>
+            <a href="{% url 'detalhe-animal' animal.pk %}" class="btn btn-secondary">Ver perfil</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
 {% endif %}
 
-<script>
-function toggleMenu() {
-  document.getElementById("dropdown").classList.toggle("active");
-}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2>Animais disponíveis</h2>
+      <p>Resultados atualizados conforme os filtros selecionados.</p>
+    </div>
+  </div>
 
-document.addEventListener("click", function(e) {
-  const menu = document.getElementById("dropdown");
-  const btn = document.querySelector(".user-btn");
-
-  if (!btn.contains(e.target) && !menu.contains(e.target)) {
-    menu.classList.remove("active");
-  }
-});
-
-const tabs = document.querySelectorAll('.tab');
-const cards = document.querySelectorAll('.card');
-
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-
-    const tipo = tab.dataset.tipo;
-
-    cards.forEach(card => {
-      const cardTipo = card.dataset.tipo;
-
-      if (tipo === 'all' || cardTipo === tipo) {
-        card.style.display = 'flex';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
-});
-</script>
-
-</body>
-</html>
+  {% if animais %}
+    <div class="animal-grid">
+      {% for animal in animais %}
+        <article class="animal-card">
+          <div class="animal-card-image">
+            <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+            <span class="tag tag-{{ animal.status }}">{{ animal.get_status_display }}</span>
+          </div>
+          <div class="animal-card-body">
+            <div class="animal-card-top">
+              <div>
+                <h3>{{ animal.nome }}</h3>
+                <p>{{ animal.tipo }} • {{ animal.sexo }} • {{ animal.porte }}</p>
+              </div>
+              {% if request.user.is_authenticated and active_profile and not active_profile.empresa %}
+                <form method="post" action="{% url 'favoritar-animal' animal.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" class="favorite-btn {% if animal.id in favoritos_ids %}is-active{% endif %}">
+                    {% if animal.id in favoritos_ids %}★{% else %}☆{% endif %}
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+            <ul class="animal-meta">
+              <li>Idade: {{ animal.idade }} ano{{ animal.idade|pluralize }}</li>
+              <li>Pelagem: {{ animal.pelagem|default:"Não informada" }}</li>
+              <li>Local: {{ animal.localizacao }}</li>
+              <li>Abrigo: {{ animal.nome_abrigo }}</li>
+            </ul>
+            <p class="animal-copy">{{ animal.caracteristicas|truncatechars:120 }}</p>
+            <div class="animal-actions">
+              <a href="{% url 'detalhe-animal' animal.pk %}" class="btn btn-primary">Ver detalhes</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Nenhum animal encontrado</h3>
+      <p>Ajuste os filtros ou limpe a busca para explorar o catálogo completo.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

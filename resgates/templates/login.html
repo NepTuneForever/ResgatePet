@@ -1,129 +1,47 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-<title>Login</title>
+{% block title %}Entrar | ResgatePet{% endblock %}
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-copy">
+    <span class="eyebrow">Acesso seguro</span>
+    <h1>Continue sua jornada de adoção ou gestão do abrigo.</h1>
+    <p>Ao entrar, você acessa seu painel, favoritos, solicitações e o acompanhamento dos animais cadastrados.</p>
+  </div>
 
-<style>
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+  <div class="panel auth-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Entrar</h2>
+        <p>Use seu usuário e senha.</p>
+      </div>
+    </div>
 
-body {
-  margin: 0;
-  font-family: 'DM Sans', sans-serif;
-  background: #f2f2f2;
-  min-height: 100vh;
-}
-
-/* HEADER */
-.header {
-  background: #2f5d8c;
-  color: white;
-  padding: 20px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  text-align: center;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 22px;
-}
-
-/* WRAPPER centraliza o card */
-.wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-}
-
-/* CARD */
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 420px;
-}
-
-/* INPUTS */
-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-family: inherit;
-  font-size: 15px;
-}
-
-/* BOTÃO */
-button {
-  width: 100%;
-  padding: 12px;
-  background: #f4c542;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 15px;
-}
-
-/* LINK */
-.link {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.link a {
-  color: #2f5d8c;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-/* ERRO */
-.erro {
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <h1>Login</h1>
-</div>
-
-<div class="wrapper">
-  <div class="card">
-    <form method="POST">
+    <form method="post" class="form-grid">
       {% csrf_token %}
-
-      {% if erro %}
-        <div class="erro">{{ erro }}</div>
+      <div class="form-group form-group-full">
+        <label for="{{ form.username.id_for_label }}">Usuário</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group form-group-full">
+        <label for="{{ form.password.id_for_label }}">Senha</label>
+        {{ form.password }}
+      </div>
+      {% if form.non_field_errors %}
+        <div class="form-group-full">
+          <small class="form-error">{{ form.non_field_errors|join:", " }}</small>
+        </div>
       {% endif %}
-
-      <input type="text" name="username" placeholder="Usuário">
-      <input type="password" name="password" placeholder="Senha">
-
-      <button type="submit">Entrar</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </div>
     </form>
 
-    <div class="link">
-      <a href="/register/">Criar conta</a>
-    </div>
-    <div class="link">
-      <a href="/recuperar/">Esqueci minha senha</a>
+    <div class="auth-links">
+      <a href="{% url 'register' %}">Criar conta</a>
+      <a href="{% url 'recuperar' %}">Esqueci minha senha</a>
     </div>
   </div>
-</div>
-
-</body>
-</html>
+</section>
+{% endblock %}
