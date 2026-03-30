@@ -1,3 +1,4 @@
+<style>
 :root {
   --brand-blue: #2f5d8c;
   --brand-blue-dark: #234769;
@@ -308,12 +309,6 @@ img {
 }
 
 label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-
-.field-label {
   display: block;
   margin-bottom: 8px;
   font-weight: 700;
@@ -706,68 +701,6 @@ textarea:focus {
   margin: 0;
 }
 
-.account-type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.account-type-card,
-.company-fields-card {
-  border-radius: 24px;
-  border: 1px solid rgba(47, 93, 140, 0.12);
-  background: var(--surface-soft);
-}
-
-.account-type-card {
-  display: grid;
-  gap: 8px;
-  padding: 20px;
-  cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.account-type-card.is-selected {
-  border-color: var(--brand-blue);
-  box-shadow: 0 14px 34px rgba(47, 93, 140, 0.12);
-  transform: translateY(-1px);
-}
-
-.account-type-card input {
-  width: auto;
-  margin: 0 0 6px;
-}
-
-.account-type-card strong {
-  font-size: 1.05rem;
-}
-
-.account-type-card span,
-.company-fields-head p {
-  color: var(--muted);
-}
-
-.company-fields-card {
-  padding: 22px;
-}
-
-.company-fields-head {
-  margin-bottom: 18px;
-}
-
-.company-fields-head h3 {
-  margin: 12px 0 8px;
-  font-size: 1.35rem;
-}
-
-.company-fields-head p {
-  margin: 0;
-}
-
-.company-fields-grid {
-  gap: 16px;
-}
-
 .health-flags {
   display: flex;
   flex-wrap: wrap;
@@ -821,7 +754,6 @@ textarea:focus {
   .hero-compact,
   .detail-layout,
   .auth-layout,
-  .account-type-grid,
   .dashboard-grid,
   .upload-preview-grid {
     grid-template-columns: 1fr;
@@ -911,3 +843,4 @@ textarea:focus {
     width: 100%;
   }
 }
+</style>

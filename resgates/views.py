@@ -134,7 +134,7 @@ class ViewAnimais(ListView):
     def get_queryset(self):
         queryset = (
             Animal.objects.select_related("abrigo", "abrigo__profile")
-            .prefetch_related("solicitacoes")
+            .prefetch_related("solicitacoes", "imagens")
             .annotate(total_solicitacoes=Count("solicitacoes"))
         )
         return apply_animal_filters(queryset, self.request.GET)
@@ -143,7 +143,7 @@ class ViewAnimais(ListView):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = AnimalFilterForm(self.request.GET or None)
         context["tipos"] = Animal.TIPO_CHOICES
-        context["destaques"] = Animal.objects.filter(destaque=True)[:3]
+        context["destaques"] = Animal.objects.filter(destaque=True).prefetch_related("imagens")[:3]
         context["total_animais"] = self.object_list.count()
 
         favoritos_ids = []
@@ -162,7 +162,7 @@ class DetalheAnimalView(DetailView):
     context_object_name = "animal"
 
     def get_queryset(self):
-        return Animal.objects.select_related("abrigo", "abrigo__profile")
+        return Animal.objects.select_related("abrigo", "abrigo__profile").prefetch_related("imagens")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -183,6 +183,7 @@ class DetalheAnimalView(DetailView):
                 if self.object.disponivel_para_adocao and context["interesse_existente"] is None:
                     context["can_show_interest_form"] = True
                     context["interest_form"] = SolicitacaoAdocaoForm(user=user, animal=self.object)
+        context["galeria_imagens"] = list(self.object.imagens.all())
         return context
 
 
@@ -226,6 +227,7 @@ class AbrigoDashboardView(EmpresaRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         animais = Animal.objects.filter(abrigo=self.request.user).prefetch_related(
+            "imagens",
             Prefetch(
                 "solicitacoes",
                 queryset=SolicitacaoAdocao.objects.select_related("adotante").order_by("-criado_em"),
@@ -252,9 +254,9 @@ class AdotanteDashboardView(AdotanteRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        favoritos = Favorito.objects.filter(adotante=self.request.user).select_related("animal")
-        solicitacoes = SolicitacaoAdocao.objects.filter(adotante=self.request.user).select_related("animal")
-        recomendados = Animal.objects.filter(status="disponivel").exclude(
+        favoritos = Favorito.objects.filter(adotante=self.request.user).select_related("animal").prefetch_related("animal__imagens")
+        solicitacoes = SolicitacaoAdocao.objects.filter(adotante=self.request.user).select_related("animal").prefetch_related("animal__imagens")
+        recomendados = Animal.objects.filter(status="disponivel").prefetch_related("imagens").exclude(
             id__in=favoritos.values_list("animal_id", flat=True)
         )[:4]
         context["favoritos"] = favoritos
@@ -339,12 +341,12 @@ class AnimalListAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Animal.objects.select_related("abrigo", "abrigo__profile")
+        queryset = Animal.objects.select_related("abrigo", "abrigo__profile").prefetch_related("imagens")
         return apply_animal_filters(queryset, self.request.query_params)
 
 
 class AnimalDetailAPIView(generics.RetrieveAPIView):
-    queryset = Animal.objects.select_related("abrigo", "abrigo__profile")
+    queryset = Animal.objects.select_related("abrigo", "abrigo__profile").prefetch_related("imagens")
     serializer_class = AnimalSerializer
     permission_classes = [permissions.AllowAny]
 

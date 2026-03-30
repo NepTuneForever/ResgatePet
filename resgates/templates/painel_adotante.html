@@ -92,7 +92,11 @@
       {% for animal in recomendados %}
         <article class="animal-card compact">
           <div class="animal-card-image">
-            <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+            {% if animal.foto_url %}
+              <img src="{{ animal.foto_url }}" alt="Foto de {{ animal.nome }}">
+            {% else %}
+              <div class="image-fallback">Sem foto</div>
+            {% endif %}
           </div>
           <div class="animal-card-body">
             <h3>{{ animal.nome }}</h3>

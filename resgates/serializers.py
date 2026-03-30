@@ -1,11 +1,21 @@
 from rest_framework import serializers
 
-from .models import Animal, SolicitacaoAdocao
+from .models import Animal, AnimalImagem, SolicitacaoAdocao
+
+
+class AnimalImagemSerializer(serializers.ModelSerializer):
+    imagem = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = AnimalImagem
+        fields = ["id", "imagem", "principal", "ordem"]
 
 
 class AnimalSerializer(serializers.ModelSerializer):
     abrigo = serializers.SerializerMethodField()
     disponivel_para_adocao = serializers.BooleanField(read_only=True)
+    foto = serializers.SerializerMethodField()
+    imagens = AnimalImagemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Animal
@@ -23,6 +33,7 @@ class AnimalSerializer(serializers.ModelSerializer):
             "localizacao",
             "contato",
             "foto",
+            "imagens",
             "status",
             "destaque",
             "criado_em",
@@ -32,6 +43,9 @@ class AnimalSerializer(serializers.ModelSerializer):
 
     def get_abrigo(self, obj):
         return obj.nome_abrigo
+
+    def get_foto(self, obj):
+        return obj.foto_url
 
 
 class SolicitacaoAdocaoSerializer(serializers.ModelSerializer):

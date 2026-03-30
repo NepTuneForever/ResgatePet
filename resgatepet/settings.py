@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
-import dj_database_url
+
+try:
+    import dj_database_url
+except ImportError:  # pragma: no cover - fallback for local development
+    dj_database_url = None
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -61,13 +65,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'resgatepet.wsgi.application'
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-DATABASES = {
-    'default': dj_database_url.parse(
-        DATABASE_URL,
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+if dj_database_url and DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -94,6 +106,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 LOGIN_URL = '/login/'
 

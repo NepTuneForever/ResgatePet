@@ -12,7 +12,7 @@
 </section>
 
 <section class="panel">
-  <form method="post" class="form-grid">
+  <form method="post" enctype="multipart/form-data" class="form-grid">
     {% csrf_token %}
 
     <div class="form-group">
@@ -54,9 +54,15 @@
       {{ form.contato }}
     </div>
     <div class="form-group">
-      <label for="{{ form.foto.id_for_label }}">URL da foto</label>
-      {{ form.foto }}
-      {% if form.foto.errors %}<small class="form-error">{{ form.foto.errors|join:", " }}</small>{% endif %}
+      <label for="{{ form.foto_principal_upload.id_for_label }}">Foto principal</label>
+      {{ form.foto_principal_upload }}
+      {% if form.foto_principal_upload.errors %}<small class="form-error">{{ form.foto_principal_upload.errors|join:", " }}</small>{% endif %}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.fotos_extras.id_for_label }}">Mais fotos para o "ver mais"</label>
+      {{ form.fotos_extras }}
+      <small>Você pode selecionar várias imagens do dispositivo.</small>
+      {% if form.fotos_extras.errors %}<small class="form-error">{{ form.fotos_extras.errors|join:", " }}</small>{% endif %}
     </div>
     <div class="form-group">
       <label for="{{ form.status.id_for_label }}">Status</label>
@@ -85,6 +91,27 @@
     {% if form.non_field_errors %}
       <div class="form-group-full">
         <small class="form-error">{{ form.non_field_errors|join:", " }}</small>
+      </div>
+    {% endif %}
+
+    {% if object and object.foto_url %}
+      <div class="form-group-full">
+        <div class="upload-preview-grid">
+          <div class="upload-preview-main">
+            <strong>Imagem principal atual</strong>
+            <img src="{{ object.foto_url }}" alt="Foto atual de {{ object.nome }}">
+          </div>
+          {% if object.fotos_extras %}
+            <div class="upload-preview-list">
+              <strong>Imagens extras atuais</strong>
+              <div class="upload-preview-thumbs">
+                {% for imagem in object.fotos_extras %}
+                  <img src="{{ imagem.imagem.url }}" alt="Foto extra de {{ object.nome }}">
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
       </div>
     {% endif %}
 

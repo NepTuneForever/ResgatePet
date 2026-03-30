@@ -79,7 +79,11 @@
     <div class="highlight-grid">
       {% for animal in destaques %}
         <article class="highlight-card">
-          <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+          {% if animal.foto_url %}
+            <img src="{{ animal.foto_url }}" alt="Foto de {{ animal.nome }}">
+          {% else %}
+            <div class="image-fallback">Sem foto</div>
+          {% endif %}
           <div>
             <span class="tag tag-{{ animal.status }}">{{ animal.get_status_display }}</span>
             <h3>{{ animal.nome }}</h3>
@@ -105,7 +109,11 @@
       {% for animal in animais %}
         <article class="animal-card">
           <div class="animal-card-image">
-            <img src="{{ animal.foto }}" alt="Foto de {{ animal.nome }}">
+            {% if animal.foto_url %}
+              <img src="{{ animal.foto_url }}" alt="Foto de {{ animal.nome }}">
+            {% else %}
+              <div class="image-fallback">Sem foto</div>
+            {% endif %}
             <span class="tag tag-{{ animal.status }}">{{ animal.get_status_display }}</span>
           </div>
           <div class="animal-card-body">

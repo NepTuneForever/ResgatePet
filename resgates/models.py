@@ -66,7 +66,7 @@ class Animal(models.Model):
     caracteristicas = models.TextField()
     localizacao = models.CharField(max_length=100)
     contato = models.CharField(max_length=20)
-    foto = models.URLField(max_length=500)
+    foto = models.URLField(max_length=500, blank=True, default="")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="disponivel")
     destaque = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True, null=True)
@@ -97,6 +97,47 @@ class Animal(models.Model):
         if profile and profile.nome_exibicao:
             return profile.nome_exibicao
         return self.abrigo.username
+
+    @property
+    def foto_principal(self):
+        if not self.pk:
+            return None
+        imagens = getattr(self, "_prefetched_objects_cache", {}).get("imagens")
+        if imagens is not None:
+            principal = next((imagem for imagem in imagens if imagem.principal), None)
+            return principal or (imagens[0] if imagens else None)
+        principal = self.imagens.filter(principal=True).first()
+        return principal or self.imagens.first()
+
+    @property
+    def foto_url(self):
+        foto_principal = self.foto_principal
+        if foto_principal and foto_principal.imagem:
+            return foto_principal.imagem.url
+        return self.foto
+
+    @property
+    def fotos_extras(self):
+        if not self.pk:
+            return []
+        imagens = getattr(self, "_prefetched_objects_cache", {}).get("imagens")
+        if imagens is not None:
+            return [imagem for imagem in imagens if not imagem.principal]
+        return self.imagens.filter(principal=False)
+
+
+class AnimalImagem(models.Model):
+    animal = models.ForeignKey(Animal, on_delete=models.CASCADE, related_name="imagens")
+    imagem = models.ImageField(upload_to="animais/")
+    principal = models.BooleanField(default=False)
+    ordem = models.PositiveIntegerField(default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-principal", "ordem", "id"]
+
+    def __str__(self):
+        return f"Imagem de {self.animal.nome}"
 
 
 class Favorito(models.Model):

@@ -6,20 +6,47 @@
 <section class="auth-layout">
   <div class="auth-copy">
     <span class="eyebrow">Cadastro</span>
-    <h1>Crie uma conta de adotante ou de abrigo.</h1>
-    <p>O formulário unifica os fluxos do rascunho do PDF e organiza os dados que o backend precisa para painel, filtros e contato.</p>
+    <h1>Crie uma conta e escolha se você é pessoa ou empresa.</h1>
+    <p>O cadastro separa quem quer adotar de quem publica animais, sem misturar os dados da empresa com os de usuário comum.</p>
   </div>
 
   <div class="panel auth-panel">
     <div class="panel-header">
       <div>
         <h2>Novo cadastro</h2>
-        <p>Preencha os dados mínimos para começar.</p>
+        <p>Escolha o tipo de conta antes de preencher os dados.</p>
       </div>
     </div>
 
     <form method="post" class="form-grid register-form">
       {% csrf_token %}
+
+      <div class="form-group-full">
+        <span class="field-label">Tipo de conta</span>
+        <div class="account-type-grid">
+          <label class="account-type-card">
+            <input
+              type="radio"
+              name="{{ form.account_type.html_name }}"
+              value="pessoa"
+              {% if form.account_type.value != "empresa" %}checked{% endif %}
+            >
+            <strong>Quero adotar</strong>
+            <span>Cadastro comum para pessoas que querem favoritar animais e enviar interesse.</span>
+          </label>
+          <label class="account-type-card">
+            <input
+              type="radio"
+              name="{{ form.account_type.html_name }}"
+              value="empresa"
+              {% if form.account_type.value == "empresa" %}checked{% endif %}
+            >
+            <strong>Sou empresa</strong>
+            <span>Área para abrigo, ONG ou empresa responsável por publicar e gerenciar resgates.</span>
+          </label>
+        </div>
+        {% if form.account_type.errors %}<small class="form-error">{{ form.account_type.errors|join:", " }}</small>{% endif %}
+      </div>
 
       <div class="form-group">
         <label for="{{ form.username.id_for_label }}">Usuário</label>
@@ -40,11 +67,13 @@
         {{ form.password2 }}
         {% if form.password2.errors %}<small class="form-error">{{ form.password2.errors|join:", " }}</small>{% endif %}
       </div>
-      <div class="form-group form-group-full">
-        <label class="checkbox-pill checkbox-wide">{{ form.empresa }} Esta conta pertence a um abrigo/ONG</label>
-      </div>
       <div class="form-group">
-        <label for="{{ form.nome_completo.id_for_label }}">Nome completo ou nome do abrigo</label>
+        <label
+          for="{{ form.nome_completo.id_for_label }}"
+          id="id_nome_completo_label"
+          data-person-label="Nome completo"
+          data-company-label="Nome da empresa ou abrigo"
+        >Nome completo</label>
         {{ form.nome_completo }}
         {% if form.nome_completo.errors %}<small class="form-error">{{ form.nome_completo.errors|join:", " }}</small>{% endif %}
       </div>
@@ -52,19 +81,32 @@
         <label for="{{ form.telefone.id_for_label }}">Telefone</label>
         {{ form.telefone }}
       </div>
-      <div class="form-group">
-        <label for="{{ form.endereco.id_for_label }}">Endereço</label>
-        {{ form.endereco }}
-        {% if form.endereco.errors %}<small class="form-error">{{ form.endereco.errors|join:", " }}</small>{% endif %}
-      </div>
-      <div class="form-group">
-        <label for="{{ form.cep.id_for_label }}">CEP</label>
-        {{ form.cep }}
-      </div>
-      <div class="form-group form-group-full">
-        <label for="{{ form.responsavel.id_for_label }}">Responsável pelo abrigo</label>
-        {{ form.responsavel }}
-        {% if form.responsavel.errors %}<small class="form-error">{{ form.responsavel.errors|join:", " }}</small>{% endif %}
+      <div class="form-group-full company-fields" id="company-fields">
+        <div class="company-fields-card">
+          <div class="company-fields-head">
+            <span class="eyebrow">Área da Empresa</span>
+            <h3>Dados da empresa, ONG ou abrigo</h3>
+            <p>Esses campos são usados no painel de quem cadastra animais.</p>
+          </div>
+
+          <div class="form-grid company-fields-grid">
+            <div class="form-group">
+              <label for="{{ form.endereco.id_for_label }}">Endereço</label>
+              {{ form.endereco }}
+              {% if form.endereco.errors %}<small class="form-error">{{ form.endereco.errors|join:", " }}</small>{% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.cep.id_for_label }}">CEP</label>
+              {{ form.cep }}
+              {% if form.cep.errors %}<small class="form-error">{{ form.cep.errors|join:", " }}</small>{% endif %}
+            </div>
+            <div class="form-group form-group-full">
+              <label for="{{ form.responsavel.id_for_label }}">Responsável pela empresa/abrigo</label>
+              {{ form.responsavel }}
+              {% if form.responsavel.errors %}<small class="form-error">{{ form.responsavel.errors|join:", " }}</small>{% endif %}
+            </div>
+          </div>
+        </div>
       </div>
       {% if form.non_field_errors %}
         <div class="form-group-full">
@@ -81,4 +123,36 @@
     </div>
   </div>
 </section>
+<script>
+  (function () {
+    const accountInputs = document.querySelectorAll('input[name="{{ form.account_type.html_name }}"]');
+    const companyFields = document.getElementById("company-fields");
+    const nameLabel = document.getElementById("id_nome_completo_label");
+    const nameInput = document.getElementById("{{ form.nome_completo.id_for_label }}");
+
+    if (!accountInputs.length || !companyFields || !nameLabel || !nameInput) {
+      return;
+    }
+
+    function updateRegisterMode() {
+      const selected = document.querySelector('input[name="{{ form.account_type.html_name }}"]:checked');
+      const isCompany = selected && selected.value === "empresa";
+
+      companyFields.hidden = !isCompany;
+      companyFields.setAttribute("aria-hidden", String(!isCompany));
+      nameLabel.textContent = isCompany ? nameLabel.dataset.companyLabel : nameLabel.dataset.personLabel;
+      nameInput.placeholder = isCompany ? "Nome da empresa, ONG ou abrigo" : "Seu nome completo";
+
+      accountInputs.forEach((input) => {
+        const card = input.closest(".account-type-card");
+        if (card) {
+          card.classList.toggle("is-selected", input.checked);
+        }
+      });
+    }
+
+    accountInputs.forEach((input) => input.addEventListener("change", updateRegisterMode));
+    updateRegisterMode();
+  }());
+</script>
 {% endblock %}
