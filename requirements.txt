@@ -3,13 +3,13 @@ certifi==2026.2.25
 charset-normalizer==3.4.6
 Django==5.2.12
 djangorestframework==3.17.0
+dj-database-url==3.0.1
+gunicorn==23.0.0
 idna==3.11
 pillow==12.1.1
+psycopg2-binary==2.9.10
 requests==2.32.5
 sqlparse==0.5.5
 tzdata==2025.3
 urllib3==2.6.3
-
-psycopg2-binary
-dj-database-url
-gunicorn
+whitenoise==6.9.0
