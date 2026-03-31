@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -112,8 +113,8 @@ class Animal(models.Model):
     @property
     def foto_url(self):
         foto_principal = self.foto_principal
-        if foto_principal and foto_principal.imagem:
-            return foto_principal.imagem.url
+        if foto_principal and foto_principal.url:
+            return foto_principal.url
         return self.foto
 
     @property
@@ -128,7 +129,10 @@ class Animal(models.Model):
 
 class AnimalImagem(models.Model):
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE, related_name="imagens")
-    imagem = models.ImageField(upload_to="animais/")
+    imagem = models.ImageField(upload_to="animais/", blank=True)
+    imagem_arquivo = models.BinaryField(blank=True, null=True)
+    imagem_content_type = models.CharField(max_length=100, blank=True, default="")
+    imagem_nome = models.CharField(max_length=255, blank=True, default="")
     principal = models.BooleanField(default=False)
     ordem = models.PositiveIntegerField(default=0)
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -138,6 +142,14 @@ class AnimalImagem(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.animal.nome}"
+
+    @property
+    def url(self):
+        if self.imagem_arquivo:
+            return reverse("animal-imagem", args=[self.pk])
+        if self.imagem:
+            return self.imagem.url
+        return ""
 
 
 class Favorito(models.Model):

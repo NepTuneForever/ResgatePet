@@ -3,14 +3,14 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
 from django.db.models import Count, Prefetch, Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, View
 from rest_framework import generics, permissions
 
 from .forms import AnimalFilterForm, AnimalForm, LoginForm, RegisterForm, SolicitacaoAdocaoForm
-from .models import Animal, Favorito, Profile, SolicitacaoAdocao
+from .models import Animal, AnimalImagem, Favorito, Profile, SolicitacaoAdocao
 from .serializers import AnimalSerializer, SolicitacaoAdocaoSerializer
 
 
@@ -51,6 +51,22 @@ def apply_animal_filters(queryset, params):
 class HomeRedirectView(View):
     def get(self, request):
         return redirect("animais")
+
+
+class AnimalImageView(View):
+    def get(self, request, pk):
+        imagem = get_object_or_404(AnimalImagem, pk=pk)
+        if imagem.imagem_arquivo:
+            response = HttpResponse(
+                imagem.imagem_arquivo,
+                content_type=imagem.imagem_content_type or "application/octet-stream",
+            )
+            if imagem.imagem_nome:
+                response["Content-Disposition"] = f'inline; filename="{imagem.imagem_nome}"'
+            return response
+        if imagem.imagem:
+            return redirect(imagem.imagem.url)
+        return HttpResponseNotFound("Imagem não encontrada.")
 
 
 class LogoutView(View):

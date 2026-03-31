@@ -4,6 +4,7 @@ from .views import (
     AbrigoDashboardView,
     AdotanteDashboardView,
     AnimalDetailAPIView,
+    AnimalImageView,
     AnimalListAPIView,
     AtualizarSolicitacaoView,
     CreatePetView,
@@ -23,6 +24,7 @@ from .views import (
 
 urlpatterns = [
     path("", HomeRedirectView.as_view(), name="home"),
+    path("animal-imagem/<int:pk>/", AnimalImageView.as_view(), name="animal-imagem"),
     path("animais/", ViewAnimais.as_view(), name="animais"),
     path("animais/novo/", CreatePetView.as_view(), name="cadastrar-animal"),
     path("animais/<int:pk>/editar/", UpdatePetView.as_view(), name="editar-animal"),

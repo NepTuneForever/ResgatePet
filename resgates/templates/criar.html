@@ -106,7 +106,7 @@
               <strong>Imagens extras atuais</strong>
               <div class="upload-preview-thumbs">
                 {% for imagem in object.fotos_extras %}
-                  <img src="{{ imagem.imagem.url }}" alt="Foto extra de {{ object.nome }}">
+                  <img src="{{ imagem.url }}" alt="Foto extra de {{ object.nome }}">
                 {% endfor %}
               </div>
             </div>

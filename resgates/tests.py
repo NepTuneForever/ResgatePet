@@ -4,6 +4,7 @@ import tempfile
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 
 from .forms import AnimalForm, RegisterForm
@@ -66,7 +67,10 @@ class AnimalFormTests(TestCase):
         self.assertEqual(AnimalImagem.objects.filter(animal=animal).count(), 3)
         self.assertTrue(AnimalImagem.objects.filter(animal=animal, principal=True).exists())
         self.assertEqual(AnimalImagem.objects.filter(animal=animal, principal=False).count(), 2)
-        self.assertTrue(animal.foto_url.endswith(".jpg"))
+        imagem_principal = AnimalImagem.objects.get(animal=animal, principal=True)
+        self.assertTrue(imagem_principal.imagem_arquivo)
+        self.assertEqual(imagem_principal.imagem_content_type, "image/jpeg")
+        self.assertTrue(animal.foto_url.startswith("/animal-imagem/"))
 
     def test_first_extra_becomes_principal_when_main_image_is_missing(self):
         form = AnimalForm(
@@ -78,7 +82,24 @@ class AnimalFormTests(TestCase):
         animal = form.save()
 
         imagem_principal = AnimalImagem.objects.get(animal=animal, principal=True)
-        self.assertIn("extra-unica", imagem_principal.imagem.name)
+        self.assertEqual(imagem_principal.imagem_nome, "extra-unica.jpg")
+        self.assertTrue(imagem_principal.url.startswith("/animal-imagem/"))
+
+    def test_uploaded_image_is_served_by_internal_route(self):
+        form = AnimalForm(
+            data=self.get_valid_data(),
+            files=MultiValueDict({"foto_principal_upload": [build_test_image("principal.jpg")]}),
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        animal = form.save()
+        imagem_principal = AnimalImagem.objects.get(animal=animal, principal=True)
+
+        response = self.client.get(reverse("animal-imagem", args=[imagem_principal.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/jpeg")
+        self.assertGreater(len(response.content), 0)
 
 
 class RegisterFormTests(TestCase):

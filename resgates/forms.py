@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db import transaction
 from PIL import Image, UnidentifiedImageError
 
 from .models import Animal, AnimalImagem, Profile, SolicitacaoAdocao
@@ -198,8 +199,9 @@ class AnimalForm(forms.ModelForm):
             animal.foto = ""
 
         if commit:
-            animal.save()
-            self._save_uploaded_images(animal)
+            with transaction.atomic():
+                animal.save()
+                self._save_uploaded_images(animal)
 
         return animal
 
@@ -212,18 +214,18 @@ class AnimalForm(forms.ModelForm):
 
         if foto_principal is not None:
             self._delete_existing_principal(animal)
-            AnimalImagem.objects.create(
+            self._create_uploaded_image(
                 animal=animal,
-                imagem=foto_principal,
+                uploaded_file=foto_principal,
                 principal=True,
                 ordem=0,
             )
 
         ordem_inicial = animal.imagens.filter(principal=False).count()
         for indice, foto_extra in enumerate(fotos_extras, start=ordem_inicial + 1):
-            AnimalImagem.objects.create(
+            self._create_uploaded_image(
                 animal=animal,
-                imagem=foto_extra,
+                uploaded_file=foto_extra,
                 principal=False,
                 ordem=indice,
             )
@@ -231,8 +233,20 @@ class AnimalForm(forms.ModelForm):
     def _delete_existing_principal(self, animal):
         imagem_principal = animal.imagens.filter(principal=True).first()
         if imagem_principal:
-            imagem_principal.imagem.delete(save=False)
+            if imagem_principal.imagem:
+                imagem_principal.imagem.delete(save=False)
             imagem_principal.delete()
+
+    def _create_uploaded_image(self, animal, uploaded_file, principal, ordem):
+        AnimalImagem.objects.create(
+            animal=animal,
+            principal=principal,
+            ordem=ordem,
+            imagem_arquivo=uploaded_file.read(),
+            imagem_content_type=getattr(uploaded_file, "content_type", "") or "image/jpeg",
+            imagem_nome=getattr(uploaded_file, "name", "")[:255],
+        )
+        uploaded_file.seek(0)
 
     def _get_uploaded_files(self, field_name):
         if hasattr(self.files, "getlist"):

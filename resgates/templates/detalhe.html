@@ -94,7 +94,7 @@
     <div class="detail-gallery">
       {% for imagem in galeria_imagens %}
         <article class="gallery-card">
-          <img src="{{ imagem.imagem.url }}" alt="Foto {% if imagem.principal %}principal{% else %}extra{% endif %} de {{ animal.nome }}">
+          <img src="{{ imagem.url }}" alt="Foto {% if imagem.principal %}principal{% else %}extra{% endif %} de {{ animal.nome }}">
           {% if imagem.principal %}
             <span class="tag tag-principal">Principal</span>
           {% endif %}

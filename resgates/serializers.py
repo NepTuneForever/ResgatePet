@@ -4,11 +4,14 @@ from .models import Animal, AnimalImagem, SolicitacaoAdocao
 
 
 class AnimalImagemSerializer(serializers.ModelSerializer):
-    imagem = serializers.ImageField(read_only=True)
+    imagem = serializers.SerializerMethodField()
 
     class Meta:
         model = AnimalImagem
         fields = ["id", "imagem", "principal", "ordem"]
+
+    def get_imagem(self, obj):
+        return obj.url
 
 
 class AnimalSerializer(serializers.ModelSerializer):
